@@ -79,23 +79,26 @@ class Orange;//class declaration
 
 class Apple {
 public:
+    int val_a;
     operator Orange() const;//Convert Apple to Orange
-    Apple() {};
+    Apple():val_a(0) {};
 };
 
 class Orange {
 public:
+    int val_o;
+    Orange():val_o(0) {};
     explicit Orange(Apple);//Convert Apple to Orange
 };
 
-Orange::Orange(Apple)
+Orange::Orange(Apple a):val_o(a.val_a)
 {
-
+    cout << "Apple to Orange constructor" << endl;
 }
 
 Apple::operator Orange () const
 {
-    cout << "Orange to Apple operator type conversion" << endl;
+    cout << "Apple to Orange operator type conversion" << endl;
     return Orange(*this);
 }
 
@@ -106,7 +109,9 @@ void test_for_ambiguity()
 {
     Apple a;
     f(a); //error if no explicit
-    Orange o = (Orange) a; //强制类型转换？？？不会调用自己定义的类型转换操作符
+    Orange o = (Orange) a; //强制类型转换调用了一个用一个Apple构造orange的构造函数
+    o = Orange(a); //与直接调用构造函数相同
+    
 }
 
 /* 测试「类型转换操作符」结束 */
