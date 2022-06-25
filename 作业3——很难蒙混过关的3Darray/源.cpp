@@ -22,17 +22,13 @@ public:
 		int col;
 		T* p;
 	public:
-		CArray2D(int r, int c) :row(r), col(c)
-		{
-			p = new T[r * c];
-		}
 		CArray2D(T* p, int r, int c) : p(p), row(r), col(c)
 		{
-			//hhh
+			
 		}
 		virtual ~CArray2D()
 		{
-			//一定不要析构2次！！！
+			//一定不要析构！！！
 		}
 		T* operator[](int row)
 		{
