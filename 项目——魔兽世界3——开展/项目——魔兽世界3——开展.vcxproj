@@ -24,6 +24,7 @@
     <ProjectGuid>{4a8ce4c3-ef45-401b-bb7e-dc94271f9027}</ProjectGuid>
     <RootNamespace>项目魔兽世界3开展</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>项目——魔兽世界3——开战</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

@@ -64,15 +64,8 @@ public:
 
 
 	// 构造函数，id
-	Warrior(int id) :id(id) 
-	{ 
-		for (int i = 0; i < 3; i++) weapon_num.emplace_back(0);
-	}
-
-	Warrior(int id,int cost) :id(id),curLife(cost)
-	{
-		for (int i = 0; i < 3; i++) weapon_num.emplace_back(0);
-	}
+	Warrior(int id) :id(id), weapon_num(vector<int>(3)) {}
+	Warrior(int id,int cost) :id(id),curLife(cost), weapon_num(vector<int>(3)) {}
 
 	// 获得战士的武器Vector3
 	vector<int>& GetWeapon(vector<int>& v)
@@ -142,7 +135,7 @@ public:
 	Dragon(float morale, int id): morale(morale), Warrior(id,lifeCost) 
 	{
 		weapon_num[id % 3]++;
-		
+		arrow_no_use = weapon_num[2];
 	}
 	//获得士气
 	float GetMorale() { return morale; }
@@ -162,6 +155,7 @@ public:
 	{
 		weapon_num[id % 3]++;
 		weapon_num[(id + 1) % 3]++;
+		arrow_no_use = weapon_num[2];
 	}
 };
 //冰人
@@ -177,6 +171,7 @@ public:
 	Iceman(int id) :Warrior(id, lifeCost)
 	{
 		weapon_num[id % 3]++;
+		arrow_no_use = weapon_num[2];
 	}
 };
 
@@ -198,6 +193,7 @@ public:
 	Lion(int loyalty,int id) :loyalty(loyalty), Warrior(id, lifeCost)
 	{
 		weapon_num[id % 3]++;
+		arrow_no_use = weapon_num[2];
 	}
 	int GetLoyalty() { return loyalty; }
 };
@@ -214,7 +210,9 @@ public:
 	static string tag; //这个战士的名字
 public:
 	//默认构造函数，wolf没有特点
-	Wolf(int id): Warrior(id, lifeCost) {}
+	Wolf(int id): Warrior(id, lifeCost) { 
+		arrow_no_use = weapon_num[2]; 
+	}
 };
 
 int Dragon::lifeCost;
