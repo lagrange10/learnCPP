@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "作业3——很难蒙混�
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "作业4——魔兽世界二", "..\作业4——魔兽世界二\作业4——魔兽世界二.vcxproj", "{0B0AC592-6848-4DBD-9AEC-78B8A0673145}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "项目——魔兽世界3——开展", "..\项目——魔兽世界3——开展\项目——魔兽世界3——开展.vcxproj", "{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{0B0AC592-6848-4DBD-9AEC-78B8A0673145}.Release|x64.Build.0 = Release|x64
 		{0B0AC592-6848-4DBD-9AEC-78B8A0673145}.Release|x86.ActiveCfg = Release|Win32
 		{0B0AC592-6848-4DBD-9AEC-78B8A0673145}.Release|x86.Build.0 = Release|Win32
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Debug|x64.ActiveCfg = Debug|x64
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Debug|x64.Build.0 = Debug|x64
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Debug|x86.ActiveCfg = Debug|Win32
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Debug|x86.Build.0 = Debug|Win32
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Release|x64.ActiveCfg = Release|x64
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Release|x64.Build.0 = Release|x64
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Release|x86.ActiveCfg = Release|Win32
+		{4A8CE4C3-EF45-401B-BB7E-DC94271F9027}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
