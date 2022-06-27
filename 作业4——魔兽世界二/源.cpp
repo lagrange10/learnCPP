@@ -43,6 +43,7 @@ class Warrior
 private:
 	/* 战士属性 */
 	int id; //游戏中的编号 ID是类型编号，数组下标
+	
 	int curLife; //当前生命
 
 	static const int warriorTypeCnt = 5;
@@ -56,7 +57,7 @@ public:
 	Warrior(int id):id(id) {}
 
 	// 获得战士的编号（id）
-	int GetID() { return id; }
+	int Get_id() { return id; }
 
 	//可以将战士名字转换为类型编号ID,如果不存在，返回-1;
 	static int NameToID(string name)
@@ -236,17 +237,17 @@ private:
 
 	string curWarrior; //当前时间要出的兵种
 	int curWarriorCnt[warriorTypeCnt]; //当前战士数量
-	string name; //红色方，蓝色方
-	int curLife; //当前司令部生命
-	bool end;
+	string colorName; //红色方，蓝色方
+	int curLifeElem; //当前司令部生命
+	bool isEnd;
 public:
 	vector<int> warriorCostByOrder; //按顺序的战士花销
 	static int initLife; //初始生命
 	bool hasLife; //是否有生命元可以出兵
 
 	//指挥部构造函数
-	Headquarters(string name) :name(name), hasLife(true)
-		, curLife(initLife), turn(0), end(false)
+	Headquarters(string name) :colorName(name), hasLife(true)
+		, curLifeElem(initLife), turn(0), isEnd(false)
 	{
 		//初始化order数组
 		if (name == "red")
@@ -277,19 +278,19 @@ public:
 
 	virtual ~Headquarters() {}
 
-	int getLife() { return curLife; }
+	int GetLifeElem() { return curLifeElem; }
 
-	void setLife(int x) { curLife = x; }
+	void SetLifeElem(int x) { curLifeElem = x; }
 
 	//指挥部随时间更新
 	void Update()
 	{
-		if (end) return;
+		if (isEnd) return;
 		int time = Timer::GetTime();
 		int id = time + 1;
 		//判断生命值是否足够，选择第一个能出的兵种
 		int cnt = warriorTypeCnt; //计数器，尝试出兵5次以后就跳出循环
-		while (curLife < warriorCostByOrder[turn % warriorTypeCnt])
+		while (curLifeElem < warriorCostByOrder[turn % warriorTypeCnt])
 		{
 			turn++; cnt--;
 			if (cnt == 0)
@@ -307,7 +308,7 @@ public:
 	
 		//生命之源--
 		int strength = Warrior::warriorCost[curID]; //消耗的生命源就是战士的生命值
-		curLife -= strength;
+		curLifeElem -= strength;
 
 		/* 实例化该兵种 */
 		Dragon d;
@@ -318,13 +319,13 @@ public:
 		switch (curID)
 		{
 		case DRAGON:
-			d = Dragon(id % 3, curLife / ((float)Dragon::lifeCost), id);
+			d = Dragon(id % 3, curLifeElem / ((float)Dragon::lifeCost), id);
 		case NINJA:
 			n = Ninja(id % 3, (id + 1) % 3);
 		case ICEMAN:
 			i = Iceman(id % 3);
 		case LION:
-			l = Lion(curLife);
+			l = Lion(curLifeElem);
 		case WOLF:
 			w = Wolf();
 		default:
@@ -342,11 +343,11 @@ public:
 		if (hasLife)
 		{
 			printf("%d %s %s %d born with strength %d,%d %s in %s headquarter\n",
-				time, name.c_str(),
+				time, colorName.c_str(),
 				curWarrior.c_str(), 
 				time + 1,
 				strength, curWarriorCnt[curID],
-				curWarrior.c_str(), name.c_str()
+				curWarrior.c_str(), colorName.c_str()
 			);
 			switch (curID)
 			{
@@ -379,8 +380,8 @@ public:
 		else
 		{
 			cout << time;
-			cout << " " + name + " headquarter stops making warriors" << endl;
-			end = true;
+			cout << " " + colorName + " headquarter stops making warriors" << endl;
+			isEnd = true;
 		}
 		turn++; //轮到下一个兵种
 	}
