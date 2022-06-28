@@ -13,6 +13,7 @@ using namespace std;
 
 //整个项目的基本参数，一些常用函数
 class Warrior;
+class Factory;
 class City
 {
 private:
@@ -22,8 +23,17 @@ private:
 	Warrior* b_w; //蓝方战士
 public:
 	City() :r_w(NULL), b_w(NULL), turn(RED), index(0) {}
+
+	//设置索引
 	void setIndex(int i){ index = i; }
-	void setWarrior(Warrior* r, Warrior* b){ r_w = r; b_w = b; }
+
+	//设置红方战士
+	void setRedWarrior(Warrior* r){ r_w = r; }
+
+	//设置蓝方战士
+	void setBlueWarrior(Warrior* b) { b_w = b; }
+
+	//在城市里战斗
 	void battle();
 };
 
@@ -54,8 +64,6 @@ int Timer::totalGameTime; //总共进行几分钟游戏
 class Headquarters
 {
 private:
-
-
 	static const int warriorTypeCnt = 5; //兵种个数
 	static const int circuCnt = 5; //循环次数
 	string order[circuCnt]; //顺序
@@ -63,22 +71,27 @@ private:
 
 	string curWarriorName; //当前时间要出的兵种
 	int curWarriorCnt[warriorTypeCnt]; //当前战士数量
+	vector<Warrior*> curWarriorList; //当前战士列表
 
 	int color;  //红=0，蓝=1
 	string colorName; //红色方，蓝色方
 
 	int curLifeElem; //当前司令部生命元
-	bool isEnd; //司令部是否结束出兵
+	bool canProduce; //司令部是否结束出兵
+	bool isOccupied; //是否被占领
 public:
 	vector<int> warriorCostByOrder; //按顺序的战士花费
 	static int initLife; //初始生命
 	bool hasLife; //是否有生命元可以出兵
-
+	Factory* pf; //这个工程
 public:
 	//指挥部构造函数
-	Headquarters(int color);
+	Headquarters(int color,Factory* pf);
 
 	virtual ~Headquarters() {}
+
+	//获得当前的工程factory
+	Factory* GetFactory() { return pf; }
 
 	//获得当前生命元
 	int GetLifeElem() { return curLifeElem; }
@@ -86,9 +99,15 @@ public:
 	//设置当前的生命元
 	void SetLifeElem(int x) { curLifeElem = x; }
 
+	//被占领
+	void beOccupied();
+
 	/* 一个小时内发生的事件 */
 	//武士降生 0min
-	void WarriorsBirth();
+	int WarriorsBirth();
+
+	//武士前进 10mmin
+	void WarriorsMarch();
 
 	//司令部报告状态 50min
 	void HeadquartersStatus();
@@ -125,6 +144,7 @@ protected:
 	/* 战士武器数量 */
 	vector<int> weapon_num;
 
+	int city; //在哪座城市
 
 	static const int warriorTypeCnt = 5; //战士种类数
 public:
@@ -165,6 +185,9 @@ public:
 	//受伤
 	void Hurt(unsigned int val);
 
+	//前进
+	void March();
+
 	//武士报告状态 55min
 	void WarriorsStatus();
 
@@ -204,7 +227,7 @@ public:
 	//默认构造函数，不使用
 	Dragon(int id, int color) : morale(0), Warrior(id, lifeCost, DRAGON, color) { }
 	//龙构造函数：初始化武器和士气
-	Dragon(float morale, int id, int color) : morale(morale), Warrior(id, lifeCost, DRAGON, color)
+	Dragon(float morale, int id, int color, Headquarters *ph) : morale(morale), Warrior(id, lifeCost, DRAGON, color, ph)
 	{
 		weapon_num[id % 3]++;
 	}
@@ -222,7 +245,7 @@ public:
 	static string tag; //这个战士的名字
 private:
 public:
-	Ninja(int id, int color) :Warrior(id, lifeCost, NINJA, color)
+	Ninja(int id, int color, Headquarters* ph) :Warrior(id, lifeCost, NINJA, color, ph)
 	{
 		weapon_num[id % 3]++;
 		weapon_num[(id + 1) % 3]++;
@@ -238,7 +261,7 @@ public:
 	static string tag; //这个战士的名字
 public:
 	//龙构造函数：初始化武器和士气
-	Iceman(int id, int color) :Warrior(id, lifeCost, ICEMAN, color)
+	Iceman(int id, int color, Headquarters* ph) :Warrior(id, lifeCost, ICEMAN, color, ph)
 	{
 		weapon_num[id % 3]++;
 	}
@@ -259,7 +282,7 @@ public:
 	//默认构造函数，不使用
 	Lion(int id, int color) :loyalty(0), Warrior(id, lifeCost, LION, color) { }
 	//龙构造函数：初始化武器和士气
-	Lion(int loyalty, int id, int color) :loyalty(loyalty), Warrior(id, lifeCost, LION, color)
+	Lion(int loyalty, int id, int color, Headquarters* ph) :loyalty(loyalty), Warrior(id, lifeCost, LION, color, ph)
 	{
 		weapon_num[id % 3]++;
 	}
@@ -298,7 +321,7 @@ public:
 	static string tag; //这个战士的名字
 public:
 	//默认构造函数，wolf没有特点
-	Wolf(int id, int color) : Warrior(id, lifeCost, WOLF, color) {
+	Wolf(int id, int color, Headquarters* ph) : Warrior(id, lifeCost, WOLF, color, ph) {
 	}
 };
 
@@ -328,7 +351,6 @@ string Wolf::tag = "wolf";
 
 /* ---------------------------各类战士结束------------------------- */
 
-
 class Factory
 {
 #define MAXCITYNUM 22
@@ -344,11 +366,10 @@ public:
 	{
 		Timer::InitTime();
 		n++;
-		InputData(); //输入数据
-		head_red = new Headquarters(RED);
-		head_blue = new Headquarters(BLUE);
+		head_red = new Headquarters(RED, this);
+		head_blue = new Headquarters(BLUE, this);
 		cout << "Case:" << n << endl;
-		//cout events
+		/* cout events */
 		while (head_red->hasLife || head_blue->hasLife)
 		{
 			Update();
@@ -364,7 +385,9 @@ public:
 		Timer::UpdateMin(5);
 		/* lion run */
 		Timer::UpdateMin(5);
-		/* forward */
+		/* march */
+		head_red->WarriorsMarch();
+		head_blue->WarriorsMarch();
 		Timer::UpdateMin(25);
 		/* wolf */
 		Timer::UpdateMin(5);
@@ -424,6 +447,12 @@ public:
 
 	}
 
+	static City* GetCityArr() { return city_list; }
+
+	Headquarters* GetRedHead() { return head_red; }
+
+	Headquarters* GetBlueHead() { return head_blue; }
+
 	static void PrintVector(const vector<int>& l)
 	{
 		auto i = l.begin();
@@ -450,7 +479,6 @@ public:
 
 int Factory::cityNum; //城市数量
 
-
 void City::battle()
 {
 	turn = (index % 2 == 1) ? RED : BLUE; //奇数城市，红先攻击
@@ -471,8 +499,8 @@ void City::battle()
 City Factory::city_list[MAXCITYNUM]; //城市数组
 
 
-Headquarters::Headquarters(int color) :color(color), hasLife(true)
-	, curLifeElem(initLife), turn(0), isEnd(false)
+Headquarters::Headquarters(int color, Factory* pf):color(color), hasLife(true)
+	, curLifeElem(initLife), turn(0), canProduce(true),pf(pf),isOccupied(false)
 {
 
 	//初始化order数组
@@ -504,16 +532,37 @@ Headquarters::Headquarters(int color) :color(color), hasLife(true)
 	}
 }
 
+
+//被占领
+
+inline void Headquarters::beOccupied() { 
+	isOccupied = true; 
+	Timer::PrintTime();
+	cout << this->colorName+" "<< "headquarter was taken" << endl;
+}
+
 //武士降生 0min
-void Headquarters::WarriorsBirth()
+int Headquarters::WarriorsBirth()
 {
 	Warrior* w = SelectWarrior();
-	if (NULL == w) return;
+	if (NULL == w) return -1;
+	curWarriorList.emplace_back(w);
 	Timer::PrintTime();
 	cout << colorName + " " << w->GetName() + " " << w->Get_id() << " born" << endl;
 	if (w->Get_ID() == LION)
 	{
 		cout << "Its loyalty is " << w->GetLoyalty() << endl;
+	}
+	return 0;
+}
+
+//武士前进 10mmin
+void Headquarters::WarriorsMarch()
+{
+	vector<Warrior*>::iterator i = curWarriorList.begin();
+	for (; i != curWarriorList.end(); i++)
+	{
+		(*i)->March();
 	}
 }
 
@@ -530,7 +579,7 @@ void Headquarters::HeadquartersStatus()
 //挑选一个战士,失败返回NULL
 Warrior* Headquarters::SelectWarrior()
 {
-	if (isEnd) return NULL;
+	if (!canProduce) return NULL;
 	int time = Timer::GetTime();
 	int id = time + 1;
 	/* 判断生命值是否足够,一旦不够就停止出兵 */
@@ -538,7 +587,7 @@ Warrior* Headquarters::SelectWarrior()
 	{
 		hasLife = false;
 		cout << colorName + " headquarter stops making warriors" << endl;
-		isEnd = true;
+		canProduce = false;
 		return NULL;
 	}
 
@@ -557,19 +606,19 @@ Warrior* Headquarters::SelectWarrior()
 	switch (curID)
 	{
 	case DRAGON:
-		curWarrior = new Dragon(curLifeElem / ((float)Dragon::lifeCost), id, color);
+		curWarrior = new Dragon(curLifeElem / ((float)Dragon::lifeCost), id, color, this);
 		break;
 	case NINJA:
-		curWarrior = new Ninja(id, color);
+		curWarrior = new Ninja(id, color, this);
 		break;
 	case ICEMAN:
-		curWarrior = new Iceman(id, color);
+		curWarrior = new Iceman(id, color, this);
 		break;
 	case LION:
-		curWarrior = new Lion(curLifeElem, id, color); //忠诚度就是当前司令部的生命curLife
+		curWarrior = new Lion(curLifeElem, id, color, this); //忠诚度就是当前司令部的生命curLife
 		break;
 	case WOLF:
-		curWarrior = new Wolf(id, color);
+		curWarrior = new Wolf(id, color, this);
 		break;
 	default:
 		break;
@@ -594,10 +643,10 @@ void Headquarters::printEvents(Warrior *curWarrior)
 		HeadquartersStatus();
 		curWarrior->WarriorsStatus();
 	}
-	else if(!isEnd)
+	else if(canProduce)
 	{
 		cout << colorName + " headquarter stops making warriors" << endl;
-		isEnd = true;
+		canProduce = false;
 	}
 	turn++; //轮到下一个兵种
 }
@@ -608,11 +657,13 @@ int main()
 	Factory::InitProject();
 	int cnt, n = 0; // cnt: 数据组数 n: 该组数据的编号
 	cin >> cnt;
+	Factory::InputData();
 	while (cnt--)
 	{
 		Factory f;
 		f.Start(n);
 	}
+	return 0;
 }
 
 
@@ -625,10 +676,12 @@ inline Warrior::Warrior(int id, int cost, int ID, int color, Headquarters* team)
 	if (RED == color)
 	{
 		colorName = "red";
+		city = 0;
 	}
 	else
 	{
 		colorName = "blue";
+		city = Factory::cityNum + 1;
 	}
 }
 
@@ -641,6 +694,42 @@ inline void Warrior::Hurt(unsigned int val)
 	{
 		curLife = 0;
 		Die();
+	}
+}
+
+//前进
+
+inline void Warrior::March()
+{
+	if (city < 0 || city > Factory::cityNum + 1) return;
+	switch (color)
+	{
+	case RED:
+		if (city < Factory::cityNum + 1)
+		{
+			city++;
+			if (city == Factory::cityNum + 1)
+			{
+				/* 占领蓝方司令部 */
+				team->GetFactory()->GetBlueHead()->beOccupied();
+				return;
+			}
+			Factory::city_list[city].setRedWarrior(this);
+			break;
+		}
+	case BLUE:
+		if (city > 0)
+		{
+			city--;
+			if (city == 0)
+			{
+				/* 占领红方司令部 */
+				team->GetFactory()->GetRedHead()->beOccupied();
+				return;
+			}
+			Factory::city_list[city].setBlueWarrior(this);
+			break;
+		}
 	}
 }
 
@@ -702,9 +791,11 @@ inline void Timer::PrintTime()
 
 inline Factory::Factory() :head_red(NULL), head_blue(NULL)
 {
-	/* 城市初始化索引 */
+	/* 城市初始化 */
 	for (int i = 0; i <= cityNum + 1; i++)
 	{
 		city_list[i].setIndex(i); //下标为0红方基地，下表为cityNum+1为蓝方基地
+		city_list[i].setBlueWarrior(NULL);
+		city_list[i].setRedWarrior(NULL);
 	}
 }
