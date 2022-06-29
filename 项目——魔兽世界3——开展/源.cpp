@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <algorithm>
 #define RED 0
 #define BLUE 1
 #define SWORD 0
@@ -14,6 +15,7 @@ using namespace std;
 //整个项目的基本参数，一些常用函数
 class Warrior;
 class Factory;
+class Weapon;
 class City
 {
 private:
@@ -25,16 +27,22 @@ public:
 	City() :r_w(NULL), b_w(NULL), turn(RED), index(0) {}
 
 	//设置索引
-	void setIndex(int i){ index = i; }
+	void SetIndex(int i){ index = i; }
 
 	//设置红方战士
-	void setRedWarrior(Warrior* r){ r_w = r; }
+	void SetRedWarrior(Warrior* r){ r_w = r; }
 
 	//设置蓝方战士
-	void setBlueWarrior(Warrior* b) { b_w = b; }
+	void SetBlueWarrior(Warrior* b) { b_w = b; }
+
+	//获得城市索引
+	int Get_id() { return index; }
+
+	//检查战斗结果,结束返回0,没结束返回-1
+	int CheckResult(Warrior* r, Warrior* b);
 
 	//在城市里战斗
-	void battle();
+	void Battle();
 };
 
 /* 只有一份时间 */
@@ -141,8 +149,9 @@ protected:
 	string colorName;
 	Headquarters* team; //阵营指针
 
-	/* 战士武器数量 */
+	/* 战士的武器 */
 	vector<int> weapon_num;
+	vector<Weapon*> weaponList;
 
 	int city; //在哪座城市
 
@@ -174,6 +183,9 @@ public:
 	// 获得狮子的忠诚度
 	virtual int GetLoyalty(){ return -1; }
 
+	// 是否死亡
+	bool IsDead() { return isDead; }
+
 	/* 设置 */
 	//死亡
 	void Die()
@@ -182,11 +194,20 @@ public:
 		/* 从team的战士列表中移除这个战士 */
 	}
 
+	//攻击
+	void Attack(Warrior* enemy);
+
 	//受伤
 	void Hurt(unsigned int val);
 
 	//前进
 	void March();
+
+	//挑选武器
+	Weapon* SelectWeapon();
+
+	//没武器了
+	bool IsWeaponEmpty() { return weaponList.empty(); }
 
 	//武士报告状态 55min
 	void WarriorsStatus();
@@ -202,10 +223,23 @@ vector<string> Warrior::warriorName;   //战士名字
 class Weapon
 {
 #define WEAPON_NUM 3
+#define INFINITY -1
 public:
 	/* 一些全局可用的信息，武器列表ID-名字 */
 	static vector<string> weaponName;  //武器名字
+private:
+	int ATK_damage;  //攻击力
+	int use_cnt; //使用次数
+	int type; //武器类型
+public:
+	Weapon(int ATK, int type);
+	bool operator<(Weapon* that);
+	bool operator==(Weapon* that);
+	int GetATK() { return ATK_damage; }
+	int GetUseTime() { return use_cnt; }
+	int GetType() { return type; }
 
+	void UseTimeDecline() { use_cnt--; }
 };
 
 vector<string> Weapon::weaponName;   //武器名字
@@ -230,6 +264,7 @@ public:
 	Dragon(float morale, int id, int color, Headquarters *ph) : morale(morale), Warrior(id, lifeCost, DRAGON, color, ph)
 	{
 		weapon_num[id % 3]++;
+		weaponList.emplace_back(new Weapon(attack, id % 3));
 	}
 	//获得士气
 	float GetMorale() { return morale; }
@@ -249,6 +284,8 @@ public:
 	{
 		weapon_num[id % 3]++;
 		weapon_num[(id + 1) % 3]++;
+		weaponList.emplace_back(new Weapon(attack, id % 3));
+		weaponList.emplace_back(new Weapon(attack, (id + 1) % 3));
 	}
 };
 //冰人
@@ -264,6 +301,7 @@ public:
 	Iceman(int id, int color, Headquarters* ph) :Warrior(id, lifeCost, ICEMAN, color, ph)
 	{
 		weapon_num[id % 3]++;
+		weaponList.emplace_back(new Weapon(attack, id % 3));
 	}
 };
 
@@ -285,6 +323,7 @@ public:
 	Lion(int loyalty, int id, int color, Headquarters* ph) :loyalty(loyalty), Warrior(id, lifeCost, LION, color, ph)
 	{
 		weapon_num[id % 3]++;
+		weaponList.emplace_back(new Weapon(attack, id % 3));
 	}
 	virtual int GetLoyalty() { return loyalty; }
 
@@ -321,7 +360,9 @@ public:
 	static string tag; //这个战士的名字
 public:
 	//默认构造函数，wolf没有特点
-	Wolf(int id, int color, Headquarters* ph) : Warrior(id, lifeCost, WOLF, color, ph) {
+	Wolf(int id, int color, Headquarters* ph) : Warrior(id, lifeCost, WOLF, color, ph) 
+	{
+
 	}
 };
 
@@ -358,6 +399,7 @@ public:
 	static int cityNum; //城市数量
 	static City city_list[MAXCITYNUM]; // 城市数组
 	Headquarters* head_red, * head_blue; //双方指挥部
+	bool isEnd;
 public:
 	Factory();
 	
@@ -370,7 +412,7 @@ public:
 		head_blue = new Headquarters(BLUE, this);
 		cout << "Case:" << n << endl;
 		/* cout events */
-		while (head_red->hasLife || head_blue->hasLife)
+		while ((head_red->hasLife || head_blue->hasLife) && !isEnd)
 		{
 			Update();
 			Timer::UpdateHour(); //更新时间
@@ -388,16 +430,27 @@ public:
 		/* march */
 		head_red->WarriorsMarch();
 		head_blue->WarriorsMarch();
+		if (isEnd) return;
 		Timer::UpdateMin(25);
 		/* wolf */
 		Timer::UpdateMin(5);
 		/* battle */
+		Battle_report();
 		Timer::UpdateMin(10);
 		head_red->HeadquartersStatus();
 		head_blue->HeadquartersStatus();
 		
 		Timer::UpdateMin(5);
 		Warriors_report();
+	}
+
+	//战斗播报
+	void Battle_report()
+	{
+		for (int i = 1; i <= Factory::cityNum; i++)
+		{
+			city_list[i].Battle();
+		}
 	}
 
 	void Warriors_report()
@@ -479,18 +532,106 @@ public:
 
 int Factory::cityNum; //城市数量
 
-void City::battle()
+//检查战斗结果
+int City::CheckResult(Warrior* r, Warrior* b)
 {
+	int ret = -1;
+	if (r->IsDead() && !b->IsDead())
+	{
+		//蓝方胜利
+		Timer::PrintTime();
+		printf("blue %s %d killed red %s %d in city %d remaining %d elements\n",
+			b_w->GetName().c_str(),
+			b_w->Get_id(),
+			r_w->GetName().c_str(),
+			r_w->Get_id(),
+			this->Get_id(),
+			b_w->GetCurLife()
+		);
+		ret = 0;
+	}
+	else if (!r->IsDead() && b->IsDead())
+	{
+		//红方胜利
+		Timer::PrintTime();
+		printf("red %s %d killed blue %s %d in city %d remaining %d elements\n",
+			r_w->GetName().c_str(),
+			r_w->Get_id(),
+			b_w->GetName().c_str(),
+			b_w->Get_id(),
+			this->Get_id(),
+			r_w->GetCurLife()
+		);
+		ret = 0;
+	}
+	else if (r->IsDead() && b->IsDead())
+	{
+		//都死亡
+		Timer::PrintTime();
+		printf("both red %s %d and blue %s %d died in city %d\n",
+			r_w->GetName().c_str(),
+			r_w->Get_id(),
+			b_w->GetName().c_str(),
+			b_w->Get_id(),
+			this->Get_id()
+		);
+		ret = 0;
+	}
+	else if (r->IsWeaponEmpty() && b->IsWeaponEmpty())
+	{
+		// 平局
+		Timer::PrintTime();
+		printf("both red %s %d and blue %s %d were alive in city %d\n",
+			r_w->GetName().c_str(),
+			r_w->Get_id(),
+			b_w->GetName().c_str(),
+			b_w->Get_id(),
+			this->Get_id()
+		);
+		ret = 0;
+	}
+	return ret;
+}
+
+void City::Battle()
+{
+	if (r_w == NULL || b_w == NULL) return; //没有战斗发生
+	
 	turn = (index % 2 == 1) ? RED : BLUE; //奇数城市，红先攻击
-		
+	
+	Weapon* red_weapon, * blue_weapon;
+	/* 挑选武器 */
+	red_weapon = r_w->SelectWeapon();
+	blue_weapon = b_w->SelectWeapon();
+
+	int ret;
 	/* 战斗过程 */
 	if (RED == turn)
 	{
-
+		//红方先手
+		while (!r_w->IsDead() && !b_w->IsDead())
+		{
+			r_w->Attack(b_w);
+			//红方胜利?
+			ret = CheckResult(r_w, b_w);
+			if (0 == ret) break;
+			b_w->Attack(r_w);
+			ret = CheckResult(r_w, b_w);
+			if (0 == ret) break;
+		}
 	}
 	else
 	{
-
+		//蓝方先手
+		while (!r_w->IsDead() && !b_w->IsDead())
+		{
+			b_w->Attack(b_w);
+			ret = CheckResult(r_w, b_w);
+			if (0 == ret) break;
+			r_w->Attack(r_w);
+			ret = CheckResult(r_w, b_w);
+			if (0 == ret) break;
+		}
 	}
 		
 }
@@ -537,6 +678,7 @@ Headquarters::Headquarters(int color, Factory* pf):color(color), hasLife(true)
 
 inline void Headquarters::beOccupied() { 
 	isOccupied = true; 
+	pf->isEnd = true;
 	Timer::PrintTime();
 	cout << this->colorName+" "<< "headquarter was taken" << endl;
 }
@@ -685,8 +827,32 @@ inline Warrior::Warrior(int id, int cost, int ID, int color, Headquarters* team)
 	}
 }
 
-//受伤
 
+//攻击
+void Warrior::Attack(Warrior* enemy)
+{
+	if (weaponList.empty()) return;
+	Weapon* w = weaponList[0];
+	enemy->Hurt(w->GetATK());
+	if (this->Get_ID() != NINJA && w->GetType() == BOMB)
+	{
+		this->Hurt(w->GetATK() / 2);
+	}
+	
+	if (w->GetUseTime() > 0)
+	{
+		w->UseTimeDecline();
+	}
+
+	if (0 == w->GetUseTime())
+	{
+		weaponList.erase(weaponList.begin());
+		delete w;
+	}
+}
+
+
+//受伤
 inline void Warrior::Hurt(unsigned int val)
 {
 	curLife -= val;
@@ -702,6 +868,7 @@ inline void Warrior::Hurt(unsigned int val)
 inline void Warrior::March()
 {
 	if (city < 0 || city > Factory::cityNum + 1) return;
+	if (isDead) return;
 	switch (color)
 	{
 	case RED:
@@ -714,7 +881,7 @@ inline void Warrior::March()
 				team->GetFactory()->GetBlueHead()->beOccupied();
 				return;
 			}
-			Factory::city_list[city].setRedWarrior(this);
+			Factory::city_list[city].SetRedWarrior(this);
 			break;
 		}
 	case BLUE:
@@ -727,10 +894,17 @@ inline void Warrior::March()
 				team->GetFactory()->GetRedHead()->beOccupied();
 				return;
 			}
-			Factory::city_list[city].setBlueWarrior(this);
+			Factory::city_list[city].SetBlueWarrior(this);
 			break;
 		}
 	}
+}
+
+Weapon* Warrior::SelectWeapon()
+{
+	if (weaponList.size() == 0) return NULL;
+	sort(weaponList.begin(), weaponList.end());
+	return weaponList[0];
 }
 
 //武士报告状态 55min
@@ -789,13 +963,57 @@ inline void Timer::PrintTime()
 	cout << min << " ";
 }
 
-inline Factory::Factory() :head_red(NULL), head_blue(NULL)
+inline Factory::Factory() :head_red(NULL), head_blue(NULL), isEnd(false)
 {
 	/* 城市初始化 */
 	for (int i = 0; i <= cityNum + 1; i++)
 	{
-		city_list[i].setIndex(i); //下标为0红方基地，下表为cityNum+1为蓝方基地
-		city_list[i].setBlueWarrior(NULL);
-		city_list[i].setRedWarrior(NULL);
+		city_list[i].SetIndex(i); //下标为0红方基地，下表为cityNum+1为蓝方基地
+		city_list[i].SetBlueWarrior(NULL);
+		city_list[i].SetRedWarrior(NULL);
+	}
+}
+
+Weapon::Weapon(int ATK, int type):
+	type(type),ATK_damage(ATK),use_cnt(0)
+{
+	if (SWORD == type)
+	{
+		ATK_damage = ATK * 0.2;
+		use_cnt = INFINITY;
+	}
+	else if (BOMB == type)
+	{
+		ATK_damage = ATK * 0.4;
+		use_cnt = 1;
+	}
+	else if (ARROW == type)
+	{
+		ATK_damage = ATK * 0.3;
+		use_cnt = 2;
+	}
+}
+
+bool Weapon::operator<(Weapon* that)
+{
+	if (this->type != that->type)
+	{
+		return this->type < that->type;
+	}
+	else
+	{
+		return this->use_cnt < that->use_cnt;
+	}
+}
+
+bool Weapon::operator==(Weapon* that)
+{
+	if (this->type == that->type && this->use_cnt == that->use_cnt)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }

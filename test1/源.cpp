@@ -1,16 +1,23 @@
 #include <iostream>
+#include <cstdio>
 using namespace std;
-
-class A
-{
-	int i;
-public:
-	A() :i(0) { cout << "consturcor a" << endl; }
-};
-
-A a[10];
 
 int main()
 {
-	A a[10];
+	for (int i = 0; i < 7; i++)
+	{
+		for (int j = 0; j < 7; j++)
+		{
+			int dist = i < 3 ? i : 6 - i;
+			if (j == 3 || j == 3 - dist || j == 3 + dist)
+			{
+				printf("*");
+			}
+			else
+			{
+				printf("#");
+			}
+		}
+		printf("\n");
+	}
 }
