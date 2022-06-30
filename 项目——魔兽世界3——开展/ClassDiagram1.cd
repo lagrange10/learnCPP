@@ -3,7 +3,7 @@
   <Class Name="City" Collapsed="true">
     <Position X="12" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAEAAAAAIIAAAAAIABgAgAAAgAAAAAAAABAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAABIIAAECCIAAiAAAAAAAAABAAAABAAA=</HashCode>
       <FileName>源.cpp</FileName>
     </TypeIdentifier>
   </Class>
@@ -17,21 +17,21 @@
   <Class Name="Headquarters" Collapsed="true">
     <Position X="15.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAICAADAggCAAIAAAAABAACAJAEEAKABBEQAAAAAEA=</HashCode>
+      <HashCode>QAAICAADAhgCAAJCAAAABACCAIAEEAKABBEQAAAAAEA=</HashCode>
       <FileName>源.cpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Warrior" Collapsed="true">
     <Position X="5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ACACAgAAAAAAkAAgABAADAAEABAQACKAAAhQACgAhiA=</HashCode>
+      <HashCode>ACACAgAAAAAAkAAgABAAHAAEALESACKABAhQACgAhiA=</HashCode>
       <FileName>源.cpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Weapon" Collapsed="true">
     <Position X="13.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <HashCode>AAAAAAABABBAAAAAAAAAAQAAgAABAAkAgAAgAACAAAA=</HashCode>
       <FileName>源.cpp</FileName>
     </TypeIdentifier>
   </Class>
@@ -63,17 +63,17 @@
       <FileName>源.cpp</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Wolf" Collapsed="true">
-    <Position X="5" Y="1.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>QAAAACAAAAAAgAAAAAAAAAAAAABAAACAAAAAAAAAAAA=</HashCode>
-      <FileName>源.cpp</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="Factory" Collapsed="true">
     <Position X="13.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQCACAAACAALAAAIAAAABAAAAAAAAAAAAIAAAAACBA=</HashCode>
+      <HashCode>EAQCACAAACAALAAAIAAAABAAABAAAAAQAEIAAAAAChA=</HashCode>
+      <FileName>源.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Wolf" Collapsed="true">
+    <Position X="5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAACAEAAAAgAAAAAAAAAAAAABAAACAAAAAAAAAAAA=</HashCode>
       <FileName>源.cpp</FileName>
     </TypeIdentifier>
   </Class>

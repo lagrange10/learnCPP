@@ -1,41 +1,28 @@
 #include <iostream>
 #include <cstdio>
+#include <vector>
 using namespace std;
 
-class A
-{
-private:
-	int i;
-public:
-	friend void B::f(A* a);
-};
 
-class B :public A
-{
-public:
-	void f(A* a)
-	{
-		a->i = 3;
-	}
-};
 
 
 int main()
 {
-	for (int i = 0; i < 7; i++)
+	vector<int> v = { 3,5,7,9,11 };
+	vector<int>::iterator j = find(v.begin(), v.end(), 9);
+	int i = 0;
+	for (; i < v.size(); i++)
 	{
-		for (int j = 0; j < 7; j++)
-		{
-			int dist = i < 3 ? i : 6 - i;
-			if (j == 3 || j == 3 - dist || j == 3 + dist)
-			{
-				printf("*");
-			}
-			else
-			{
-				printf("#");
-			}
-		}
-		printf("\n");
+		cout << v[i] << " ";
+		if (v[i] == 9) { v.erase(j); i--; }
 	}
+	/*cout << v.size() << endl;
+	cout << v.empty() << endl;
+	vector<int>::iterator ii = v.begin();
+	ii = v.end();
+	cout << (v.begin() == v.end()) << endl;
+	int i = 1;*/
+
+	return 0;
 }
+
