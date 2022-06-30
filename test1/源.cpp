@@ -2,6 +2,24 @@
 #include <cstdio>
 using namespace std;
 
+class A
+{
+private:
+	int i;
+public:
+	friend void B::f(A* a);
+};
+
+class B :public A
+{
+public:
+	void f(A* a)
+	{
+		a->i = 3;
+	}
+};
+
+
 int main()
 {
 	for (int i = 0; i < 7; i++)
