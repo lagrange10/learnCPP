@@ -631,9 +631,6 @@ public:
 		Warrior::warriorCost.emplace_back(Iceman::lifeCost);
 		Warrior::warriorCost.emplace_back(Lion::lifeCost);
 		Warrior::warriorCost.emplace_back(Wolf::lifeCost);
-		//PrintVector(Warrior::warriorCost);
-
-
 	}
 
 	static City* GetCityArr() { return city_list; }
@@ -641,29 +638,6 @@ public:
 	Headquarters* GetRedHead() { return head_red; }
 
 	Headquarters* GetBlueHead() { return head_blue; }
-
-	static void PrintVector(const vector<int>& l)
-	{
-		auto i = l.begin();
-		for (i = l.begin(); i != l.end(); i++)
-		{
-			cout << *i << endl;
-		}
-	}
-	static void PrintArray(const string* a, int size)
-	{
-		for (int i = 0; i < size; i++)
-		{
-			cout << a[i] << endl;
-		}
-	}
-	static void PrintArray(const int* a, int size)
-	{
-		for (int i = 0; i < size; i++)
-		{
-			cout << a[i] << endl;
-		}
-	}
 };
 
 int Factory::cityNum; //城市数量
