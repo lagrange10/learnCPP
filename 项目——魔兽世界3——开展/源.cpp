@@ -40,9 +40,6 @@ public:
 	//获得城市索引
 	int Get_id() { return index; }
 
-	//检查战斗死亡结果,结束返回0,没结束返回-1
-	int CheckDeadResult(Warrior* r, Warrior* b, Weapon* rw, Weapon* bw);
-
 	//检查战斗平局或者胜利结果，结束返回0,没结束返回-1
 	int CheckResult(Warrior* r, Warrior* b, Weapon* rw, Weapon* bw);
 
@@ -670,55 +667,6 @@ public:
 };
 
 int Factory::cityNum; //城市数量
-
-int City::CheckDeadResult(Warrior* r, Warrior* b, Weapon* rw, Weapon* bw)
-{
-	int ret = -1;
-	if (r->IsDead() && !b->IsDead())
-	{
-		//蓝方胜利
-		Timer::PrintTime();
-		printf("blue %s %d killed red %s %d in city %d remaining %d elements\n",
-			b->GetName().c_str(),
-			b->Get_id(),
-			r->GetName().c_str(),
-			r->Get_id(),
-			this->Get_id(),
-			b->GetCurLife()
-		);
-		b->Stole(r);
-		ret = 0;
-	}
-	else if (!r->IsDead() && b->IsDead())
-	{
-		//红方胜利
-		Timer::PrintTime();
-		printf("red %s %d killed blue %s %d in city %d remaining %d elements\n",
-			r->GetName().c_str(),
-			r->Get_id(),
-			b->GetName().c_str(),
-			b->Get_id(),
-			this->Get_id(),
-			r->GetCurLife()
-		);
-		r->Stole(b);
-		ret = 0;
-	}
-	else if (r->IsDead() && b->IsDead())
-	{
-		//都死亡
-		Timer::PrintTime();
-		printf("both red %s %d and blue %s %d died in city %d\n",
-			r->GetName().c_str(),
-			r->Get_id(),
-			b->GetName().c_str(),
-			b->Get_id(),
-			this->Get_id()
-		);
-		ret = 0;
-	}
-	return ret;
-}
 
 //检查战斗平局或者胜利结果
 int City::CheckResult(Warrior* r, Warrior* b, Weapon* rw, Weapon* bw)
